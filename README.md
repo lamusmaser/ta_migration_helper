@@ -1,5 +1,5 @@
 # ta_migration_helper
-Migration helper for TubeArchivist
+Migration helper for TubeArchivist from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
 
 This is expected to run from within the TubeArchivist container.
 
