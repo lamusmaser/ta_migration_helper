@@ -126,7 +126,7 @@ for video_id in videos_in_es_not_in_fs:
         results["InESNotFS"][video_id]["secondary_result"] = "Not Found In Filesystem"
     results["InESNotFS"][video_id]["original_location"] = video_files[video_id]['original_location']
     results["InFSNotES"][video_id]["expected_location"] = video_files[video_id]['expected_location']
-results["InESInFS"]
+results["InESInFS"] = {}
 for video_id in videos_in_both:
     results["InESInFS"][video_id]["secondary_result"] = "Not Required - Present In Both"
     results["InESInFS"][video_id]["original_location"] = video_files[video_id]['original_location']
