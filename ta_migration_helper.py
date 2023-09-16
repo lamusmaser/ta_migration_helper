@@ -91,7 +91,10 @@ for root, dirs, files in os.walk('/youtube'):
             video_id = extract_video_id(filename)
             if video_id:
                 original_location = os.path.join(root, filename)
-                channel_id = get_channel_id(video_id)
+                if video_files.get(video_id):
+                    channel_id = video_files[video_id][0]['channel_id']
+                else:
+                    channel_id = get_channel_id(video_id)
                 if channel_id:
                     expected_location = f"/youtube/{channel_id}/{video_id}.{os.path.splitext(filename)[-1]}"
                     if not video_files.get(video_id):
@@ -103,7 +106,7 @@ for root, dirs, files in os.walk('/youtube'):
                         vid_type = 'subtitle'
                     else:
                         vid_type = 'other'
-                    video_files[video_id].append({'type': vid_type, 'original_location': original_location, 'expected_location': expected_location})
+                    video_files[video_id].append({'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location})
 
 # Get video IDs from Elasticsearch
 es_video_ids = get_video_ids_from_es()
