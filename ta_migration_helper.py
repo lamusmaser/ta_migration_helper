@@ -30,7 +30,7 @@ def get_channel_id(video_id):
     ydl_opts = {'quiet': True, 'logger': FakeLogger()}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
-            time.sleep(.5)
+            time.sleep(3)
             info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
             return info.get('channel_id')
         except yt_dlp.utils.DownloadError as e:
