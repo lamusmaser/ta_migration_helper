@@ -121,6 +121,7 @@ results = {}
 
 results["InFSNotES"] = {}
 for video_id in videos_in_fs_not_in_es:
+    results["InFSNotES"][video_id] = {}
     if check_video_id_from_es(video_id):
         results["InFSNotES"][video_id]["secondary_result"] = "Secondary Search Found Result"
     else:
@@ -128,6 +129,7 @@ for video_id in videos_in_fs_not_in_es:
     results["InFSNotES"][video_id]["details"] = video_files[video_id]
 results["InESNotFS"] = {}
 for video_id in videos_in_es_not_in_fs:
+    results["InESNotFS"][video_id] = {}
     if check_filesystem_for_video_ids(all_files, [video_id]):
         results["InESNotFS"][video_id]["secondary_result"] = "Secondary Search Found Result"
     else:
@@ -135,6 +137,7 @@ for video_id in videos_in_es_not_in_fs:
     results["InESNotFS"][video_id]["details"] = video_files[video_id]
 results["InESInFS"] = {}
 for video_id in videos_in_both:
+    results["InESInFS"][video_id] = {}
     results["InESInFS"][video_id]["secondary_result"] = "Not Required - Present In Both"
     results["InESInFS"][video_id]["details"] = video_files[video_id]
 print(json.dumps(results))
