@@ -96,13 +96,13 @@ for root, dirs, files in os.walk('/youtube'):
                 else:
                     channel_id = get_channel_id(video_id)
                 if channel_id:
-                    expected_location = f"/youtube/{channel_id}/{video_id}.{os.path.splitext(filename)[-1]}"
+                    expected_location = f"/youtube/{channel_id}/{video_id}{os.path.splitext(filename)[-1]}"
                     if not video_files.get(video_id):
                         video_files[video_id] = []
                     vid_type = None
-                    if os.path.splitext(filename)[-1] in ['mp4']:
+                    if os.path.splitext(filename)[-1] in ['.mp4']:
                         vid_type = 'video'
-                    elif os.path.splitext(filename)[-1] in ['vtt']:
+                    elif os.path.splitext(filename)[-1] in ['.vtt']:
                         vid_type = 'subtitle'
                     else:
                         vid_type = 'other'
