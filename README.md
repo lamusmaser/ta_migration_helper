@@ -1,7 +1,7 @@
 # ta_migration_helper
 Migration helper for TubeArchivist from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
 
-This is expected to run from within the TubeArchivist container.
+This is expected to run from within the TubeArchivist container, at the `/app` directory. This allows it to see the TubeArchivist helper functions.
 
 Current functionality:
 1. Detects videos in filesystem that are not in ElasticSearch.
