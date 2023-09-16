@@ -94,7 +94,16 @@ for root, dirs, files in os.walk('/youtube'):
                 channel_id = get_channel_id(video_id)
                 if channel_id:
                     expected_location = f"/youtube/{channel_id}/{video_id}.{os.path.splitext(filename)[-1]}"
-                    video_files[video_id] = {'original_location': original_location, 'expected_location': expected_location}
+                    if not video_files.get(video_id):
+                        video_files[video_id] = []
+                    vid_type = None
+                    if os.path.splitext(filename)[-1] in ['mp4']:
+                        vid_type = 'video'
+                    elif os.path.splitext(filename)[-1] in ['vtt']:
+                        vid_type = 'subtitle'
+                    else:
+                        vid_type = 'other'
+                    video_files[video_id].append({'type': vid_type, 'original_location': original_location, 'expected_location': expected_location})
 
 # Get video IDs from Elasticsearch
 es_video_ids = get_video_ids_from_es()
@@ -116,19 +125,16 @@ for video_id in videos_in_fs_not_in_es:
         results["InFSNotES"][video_id]["secondary_result"] = "Secondary Search Found Result"
     else:
         results["InFSNotES"][video_id]["secondary_result"] = "Not Found In ElasticSearch"
-    results["InFSNotES"][video_id]["original_location"] = video_files[video_id]['original_location']
-    results["InFSNotES"][video_id]["expected_location"] = video_files[video_id]['expected_location']
+    results["InFSNotES"][video_id]["details"] = video_files[video_id]
 results["InESNotFS"] = {}
 for video_id in videos_in_es_not_in_fs:
     if check_filesystem_for_video_ids(all_files, [video_id]):
         results["InESNotFS"][video_id]["secondary_result"] = "Secondary Search Found Result"
     else:
         results["InESNotFS"][video_id]["secondary_result"] = "Not Found In Filesystem"
-    results["InESNotFS"][video_id]["original_location"] = video_files[video_id]['original_location']
-    results["InFSNotES"][video_id]["expected_location"] = video_files[video_id]['expected_location']
+    results["InESNotFS"][video_id]["details"] = video_files[video_id]
 results["InESInFS"] = {}
 for video_id in videos_in_both:
     results["InESInFS"][video_id]["secondary_result"] = "Not Required - Present In Both"
-    results["InESInFS"][video_id]["original_location"] = video_files[video_id]['original_location']
-    results["InESInFS"][video_id]["expected_location"] = video_files[video_id]['expected_location']
+    results["InESInFS"][video_id]["details"] = video_files[video_id]
 print(json.dumps(results))
