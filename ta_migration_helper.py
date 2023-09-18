@@ -101,6 +101,7 @@ file_count = sum(len(files) for _, _, files in os.walk('/youtube'))
 video_files = {}
 all_files = []
 current_count = 0
+print("Processing video files...")
 for root, dirs, files in os.walk('/youtube'):
     for filename in files:
         current_count += 1
