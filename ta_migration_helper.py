@@ -97,7 +97,7 @@ def check_filesystem_for_video_ids(video_list, video_ids):
 
 # Walk through the /youtube directory
 print("Calculating number of files to process...")
-file_count = len(list(os.walk(os.path.abspath('/youtube'))))
+file_count = sum(len(files) for _, _, files in os.walk('/youtube'))
 video_files = {}
 all_files = []
 current_count = 0
