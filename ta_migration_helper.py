@@ -168,7 +168,7 @@ for video_id in videos_in_es_not_in_fs:
                     'channel_id': res[vid_id]['channel_id'],
                     'type': 'subtitle',
                     'original_location': 'NOT_AVAILABLE',
-                    'expected_location': res[vid_id]['sub'][sub]
+                    'expected_location': f"/youtube/{res[vid_id]['sub'][sub]}"
                 })
     results["InESNotFS"][video_id]["details"] = pull
 results["InESInFS"] = {}
