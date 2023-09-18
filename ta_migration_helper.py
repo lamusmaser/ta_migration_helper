@@ -66,6 +66,22 @@ def check_video_id_from_es(video_id):
                 video_ids[hit['_id']]['subtitles'].append({sub['lang']: sub['media_url']})
     return video_ids
 
+def pull_video_from_es(video_id):
+    res = ElasticWrap("ta_video/_search").get(data={"query": {"match":{"_id": video_id}}})
+    if res[1] == 200:
+        res = res[0]
+    video_ids = {}
+    for hit in res['hits']['hits']:
+        video_ids[hit['_id']] = {}
+        video_ids[hit['_id']]['channel_id'] = hit['_source']['channel']['channel_id']
+        video_ids[hit['_id']]['media_url'] = hit['_source']['media_url']
+        if hit['_source'].get('subtitles'):
+            video_ids[hit['_id']]['subs'] = []
+            for sub in hit['_source']['subtitles']:
+                video_ids[hit['_id']]['subs'].append({sub['lang']: sub['media_url']})
+    return video_ids
+        
+
 def check_channel_id_from_es(video_id):
     res = ElasticWrap("ta_video/_search").get(data={"query": {"match":{"_id": video_id}}})
     if res[1] == 200:
@@ -137,7 +153,24 @@ for video_id in videos_in_es_not_in_fs:
         results["InESNotFS"][video_id]["secondary_result"] = "Secondary Search Found Result"
     else:
         results["InESNotFS"][video_id]["secondary_result"] = "Not Found In Filesystem"
-    results["InESNotFS"][video_id]["details"] = video_files[video_id]
+    pull = []
+    res = pull_video_from_es(video_id)
+    for vid_id in res.keys():
+        pull.append({
+            'channel_id': res[vid_id]['channel_id'],
+            'type': 'video',
+            'original_location': 'NOT_AVAILABLE',
+            'expected_location': res[vid_id]['media_url']
+        })
+        if res[vid_id].get('subs'):
+            for sub in res[vid_id]['subs']:
+                pull.append({
+                    'channel_id': res[vid_id]['channel_id'],
+                    'type': 'subtitle',
+                    'original_location': 'NOT_AVAILABLE',
+                    'expected_location': res[vid_id]['sub'][sub]
+                })
+    results["InESNotFS"][video_id]["details"] = pull
 results["InESInFS"] = {}
 for video_id in videos_in_both:
     results["InESInFS"][video_id] = {}
