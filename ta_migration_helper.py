@@ -96,14 +96,18 @@ def check_filesystem_for_video_ids(video_list, video_ids):
     return final_list
 
 # Walk through the /youtube directory
+print("Calculating number of files to process...")
+file_count = len(list(os.walk(os.path.abspath('/youtube'))))
 video_files = {}
 all_files = []
+current_count = 0
 for root, dirs, files in os.walk('/youtube'):
     for filename in files:
+        current_count += 1
         all_files.append(os.path.join(root,filename))
         match = re.search(rx, filename, re.IGNORECASE)
         if match:
-            print(f"Matching file: {filename}")
+            print(f"[{current_count}/{file_count}] Matching file: {filename}")
             video_id = extract_video_id(filename)
             if video_id:
                 original_location = os.path.join(root, filename)
