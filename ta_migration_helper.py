@@ -165,7 +165,7 @@ for video_id in videos_in_es_not_in_fs:
             'channel_id': res[vid_id]['channel_id'],
             'type': 'video',
             'original_location': 'NOT_AVAILABLE',
-            'expected_location': res[vid_id]['media_url']
+            'expected_location': f"/youtube/{res[vid_id]['media_url']}"
         })
         if res[vid_id].get('subs'):
             for sub in res[vid_id]['subs']:
