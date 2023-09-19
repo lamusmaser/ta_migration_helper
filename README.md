@@ -18,9 +18,9 @@ Migration helper for TubeArchivist from the legacy filenaming convention (v0.3.6
 ## Additional Arguments
 Argument | Flag | Default | Purpose
 :--- | :---: | :---: | :---
-`SOURCE_DIR` | -s | `/youtube` | The source directory that will be searched for videos that need to be migrated. This can be used to specify an individual folder instead of the entire `/youtube` directory[^1].
+`SOURCE_DIR` | -d | `/youtube` | The source directory that will be searched for videos that need to be migrated. This can be used to specify an individual folder instead of the entire `/youtube` directory[^1].
 `USE_YTDLP` | -Y | `True` | Allows the user to disable calls to YouTube via `yt-dlp`. This will not allow any calls to YouTube and will instead only search ElasticSearch. 
-`YTDLP_SLEEP` | -S | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
+`YTDLP_SLEEP` | -s | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
 `PERFORM_MIGRATION` | -M | `False` | If set to `False`, this will perform a review of what files need to be migrated and why. If set to `True`, this will attempt to migrate all files[^2]. 
 
 [^1]: This could cause issues with the migration portion, as it will be relative to the `SOURCE_DIR`.

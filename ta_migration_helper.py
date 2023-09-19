@@ -26,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="TA Migration Helper Script")
     # Optional arguments
     parser.add_argument(
-        '-s', '--SOURCE_DIR',
+        '-d', '--SOURCE_DIR',
         default='/youtube',
         help="The source directory that will be searched for videos that need to be migrated."
     )
@@ -37,7 +37,7 @@ def parse_args():
         help="Disable calls to YouTube via yt-dlp. If set, it will only search ElasticSearch."
     )
     parser.add_argument(
-        '-S', '--YTDLP_SLEEP',
+        '-s', '--YTDLP_SLEEP',
         type=int,
         default=3,
         help="Number of seconds to wait between each call to YouTube when using yt-dlp. This value is not used if USE_YTDLP is set to False."
