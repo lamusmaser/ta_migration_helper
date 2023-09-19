@@ -23,28 +23,32 @@ class FakeLogger(object):
         pass
 
 def parse_args():
+    default_source = "/youtube"
+    default_use_ytdlp = True
+    default_ytdlp_sleep = 3
+    default_perform_migration = False
     parser = argparse.ArgumentParser(description="TA Migration Helper Script")
     # Optional arguments
     parser.add_argument(
         '-d', '--SOURCE_DIR',
-        default='/youtube',
+        default=default_source,
         help="The source directory that will be searched for videos that need to be migrated."
     )
     parser.add_argument(
         '-Y', '--USE_YTDLP',
-        default=True,
+        default=default_use_ytdlp,
         action='store_true',
         help="Disable calls to YouTube via yt-dlp. If set, it will only search ElasticSearch."
     )
     parser.add_argument(
         '-s', '--YTDLP_SLEEP',
         type=int,
-        default=3,
+        default=default_ytdlp_sleep,
         help="Number of seconds to wait between each call to YouTube when using yt-dlp. This value is not used if USE_YTDLP is set to False."
     )
     parser.add_argument(
         '-M', '--PERFORM_MIGRATION',
-        default=False,
+        default=default_perform_migration,
         action='store_true',
         help="If set to True, this will attempt to migrate all files. If False, it will perform a review of what files need to be migrated and why."
     )
@@ -176,6 +180,7 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                         if vid_type == 'subtitle':
                             det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
                         video_files[video_id].append(det)
+    return video_files, all_files
 
 def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, source):
     videos_in_fs_not_in_es = fs_video_ids - es_video_ids
@@ -311,10 +316,6 @@ def migrate_files(diffs, all_files, root):
             print("No action taken at this time. Please perform the action from within the TubeArchivist GUI.")
 
 def main():
-    default_source = "/youtube"
-    default_use_ytdlp = True
-    default_ytdlp_sleep = 3
-    default_perform_migration = False
     args = parse_args()
     source_dir = args.SOURCE_DIR
     use_ytdlp = args.USE_YTDLP
@@ -339,7 +340,7 @@ def main():
         migrate_files(diffs, all_files, source_dir)
         print("Ending the migration process.")
 
-if __name__ == "main":
+if __name__ == "__main__":
     print("Starting script...")
     main()
     print("Script finished. Exiting.")
