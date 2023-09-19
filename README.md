@@ -14,6 +14,9 @@ Expected next steps:
 3. Allow migration of subtitles/other files found.
 4. Determine if there are other functions that need to be performed.
 
+> [!WARNING]
+> Using the `PERFORM_MIGRATION` action is a destructive process and could cause issues with files. It is recommended to not use it unless advised or after you have reviewed an initial output of what is expected to happen.
+
 ## Environment Variables
 Variable | Default | Purpose
 :--- | :---: | :---
