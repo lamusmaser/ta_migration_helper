@@ -17,14 +17,21 @@ Expected next steps:
 > [!WARNING]
 > Using the `PERFORM_MIGRATION` action is a destructive process and could cause issues with files. It is recommended to not use it unless advised or after you have reviewed an initial output of what is expected to happen.
 
-## Environment Variables
-Variable | Default | Purpose
-:--- | :---: | :---
-`SOURCE_DIR` | `/youtube` | The source directory that will be searched for videos that need to be migrated. This can be used to specify an individual folder instead of the entire `/youtube` directory[^1].
-`USE_YTDLP` | `True` | Allows the user to disable calls to YouTube via `yt-dlp`. This will not allow any calls to YouTube and will instead only search ElasticSearch. 
-`YTDLP_SLEEP` | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
-`PERFORM_MIGRATION` | `False` | If set to `False`, this will perform a review of what files need to be migrated and why. If set to `True`, this will attempt to migrate all files[^2]. 
+## Additional Arguments
+Argument | Flag | Default | Purpose
+:--- | :---: | :---: | :---
+`SOURCE_DIR` | -s | `/youtube` | The source directory that will be searched for videos that need to be migrated. This can be used to specify an individual folder instead of the entire `/youtube` directory[^1].
+`USE_YTDLP` | -Y | `True` | Allows the user to disable calls to YouTube via `yt-dlp`. This will not allow any calls to YouTube and will instead only search ElasticSearch. 
+`YTDLP_SLEEP` | -S | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
+`PERFORM_MIGRATION` | -M | `False` | If set to `False`, this will perform a review of what files need to be migrated and why. If set to `True`, this will attempt to migrate all files[^2]. 
 
 [^1]: This could cause issues with the migration portion, as it will be relative to the `SOURCE_DIR`.
 [^2]: This is a destructive process and could cause issues with files.
   There is a ten second barrier after analysis to allow cancellation of the script before starting the migration process - once it is started, it **should not be interrupted**.
+
+You can run this script with the optional flags. For example:
+```
+python ta_migration_helper.py -s /path/to/custom/directory -Y -S 5 -M
+```
+
+This would set the source directory to `/path/to/custom/directory`, disable YouTube calls via `yt-dlp`, set the sleep time to 5 seconds between YouTube calls, and enable migration.

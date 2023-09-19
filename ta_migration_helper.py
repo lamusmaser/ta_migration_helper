@@ -1,3 +1,4 @@
+import argparse
 import json
 import os
 import re
@@ -20,6 +21,36 @@ class FakeLogger(object):
 
     def error(self, msg):
         pass
+
+def parse_args():
+    parser = argparse.ArgumentParser(description="TA Migration Helper Script")
+    # Optional arguments
+    parser.add_argument(
+        '-s', '--SOURCE_DIR',
+        default='/youtube',
+        help="The source directory that will be searched for videos that need to be migrated."
+    )
+    parser.add_argument(
+        '-Y', '--USE_YTDLP',
+        default=True,
+        action='store_true',
+        help="Disable calls to YouTube via yt-dlp. If set, it will only search ElasticSearch."
+    )
+    parser.add_argument(
+        '-S', '--YTDLP_SLEEP',
+        type=int,
+        default=3,
+        help="Number of seconds to wait between each call to YouTube when using yt-dlp. This value is not used if USE_YTDLP is set to False."
+    )
+    parser.add_argument(
+        '-M', '--PERFORM_MIGRATION',
+        default=False,
+        action='store_true',
+        help="If set to True, this will attempt to migrate all files. If False, it will perform a review of what files need to be migrated and why."
+    )
+    args = parser.parse_args()
+    return args
+
 
 # Function to extract video IDs from filenames
 def extract_video_id(filename):
@@ -284,10 +315,11 @@ def main():
     default_use_ytdlp = True
     default_ytdlp_sleep = 3
     default_perform_migration = False
-    source_dir = os.getenv("SOURCE_DIR", default_source)
-    use_ytdlp = str(os.getenv("USE_YTDLP", default_use_ytdlp)).lower() in ("true", 1, "t")
-    ytdlp_sleep = int(os.getenv("YTDLP_SLEEP", default_ytdlp_sleep))
-    perform_migration = str(os.getenv("PERFORM_MIGRATION", default_perform_migration)).lower() in ("true", 1, "t")
+    args = parse_args()
+    source_dir = args.SOURCE_DIR
+    use_ytdlp = args.USE_YTDLP
+    ytdlp_sleep = args.YTDLP_SLEEP
+    perform_migration = args.PERFORM_MIGRATION
     if not os.path.exists(source_dir):
         print(f"The directory `{source_dir}` does not exist. Exiting.")
         return 1
