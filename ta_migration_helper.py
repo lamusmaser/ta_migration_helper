@@ -254,17 +254,30 @@ def migrate_files(diffs, all_files, root):
                             print(f"An issue occurred during the migration of files for ID {video}. Please review the exception: {e}")
                             continue
             elif diffs["InESNotFS"][video].get("secondary_result") and diffs["InESNotFS"][video]["secondary_result"] == "Not Found In Filesystem":
-                print(f"Files for {video} do not exist in filesystem. A filesystem rescan will remove video {video} from your TubeArchivist instance.")
+                print(f"Files for {video} do not exist in filesystem. A filesystem rescan will remove video {video} from your TubeArchivist instance. If the videos are present elsewhere in your filesystem, please add them to `{root}`.")
                 flag_filesystem_rescan = True
                 flag_filesystem_rescan_list.append(video)
                 continue
     if diffs.get("InESInFS"):
-        True
+        for video in diffs["InESInFS"].keys():
+            print(f"At least 1 file for {video} was detected on your filesystem and in ElasticSearch. Attempting to migrate to the new naming scheme.")
+            for file in diffs["InESInFS"][video]["details"]:
+                try:
+                    prep_directory(root, os.path.dirname(file["original_location"]), file["channel_id"])
+                    if file["original_location"] != file["expected_location"]:
+                        print(f"Moving file `{file['original_location']}` to `{file['expected_location']}`.")
+                        shutil.move(file['original_location'], file['expected_location'])
+                        nmu = '/'.join(file['expected_location'].split('/')[2:])
+                        update_es_for_item(video,nmu,file['type'], file['lang'] if file.get('lang') else None)
+                    else:
+                        print(f"No migration necessary for `{file['original_location']}`. File is already using the expected naming format.")
+                except Exception as e:
+                    print(f"An issue occurred during the migration of files for ID {video}. Please review the exception: {e}")
     if diffs.get("InFSNotES"):
         if flag_filesystem_rescan:
             print(f"A filesystem rescan is expected to be performed to add these videos to your TubeArchivist instance. It was noted that there are some videos in ElasticSearch that do not exist in your filesystem. Please retain those records to download, import, or migrate those videos again in the future.")
             print(flag_filesystem_rescan_list)
-        True
+            print("No action taken at this time. Please perform the action from within the TubeArchivist GUI.")
 
 def main():
     default_source = "/youtube"
