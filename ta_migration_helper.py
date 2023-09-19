@@ -215,14 +215,14 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, so
             })
             if res[vid_id].get('subs'):
                 for sub in res[vid_id]['subs']:
-                    lang = sub['lang']
-                    pull.append({
-                        'channel_id': res[vid_id]['channel_id'],
-                        'type': 'subtitle',
-                        'original_location': os.path.join(source, sub['media_url']),
-                        'expected_location': os.path.join(os.path.join(source, res[vid_id]['channel_id']), f"{vid_id}.{lang}.vtt"),
-                        'lang': lang
-                    })
+                    for lang, media_url in sub.items():
+                        pull.append({
+                            'channel_id': res[vid_id]['channel_id'],
+                            'type': 'subtitle',
+                            'original_location': os.path.join(source, media_url),
+                            'expected_location': os.path.join(os.path.join(source, res[vid_id]['channel_id']), f"{vid_id}.{lang}.vtt"),
+                            'lang': lang
+                        })
         results["InESNotFS"][video_id]["details"] = pull
     results["InESInFS"] = {}
     for video_id in videos_in_both:
