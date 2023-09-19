@@ -251,9 +251,9 @@ def update_es_for_item(id, nmu, vid_type, lang):
         if res[1] == 200:
             res = res[0]
         subtitles = res['hits']['hits'][0]['_source']['subtitles']
-        for sub in subtitles:
+        for i, sub in enumerate(subtitles):
             if sub['lang'] == lang:
-                subtitles[sub]['media_url'] = new_media_url
+                subtitles[i]['media_url'] = new_media_url
         source = {"doc": {"subtitles": subtitles}}
     else:
         source = {"doc": {"media_url": new_media_url}}
@@ -267,6 +267,13 @@ def update_es_for_item(id, nmu, vid_type, lang):
     except Exception as e:
         print(f"Exception occurred during update of ElasticSearch: {e}")
 
+def migration(root, id, source_file, dest_file_obj):
+    prep_directory(root, os.path.dirname(source_file), dest_file_obj["channel_id"])
+    print(f"Moving file `{source_file}` to `{dest_file_obj['expected_location']}`.")
+    shutil.move(source_file, dest_file_obj["expected_location"])
+    nmu = '/'.join(dest_file_obj["expected_location"].split('/')[2:])
+    update_es_for_item(id, nmu, dest_file_obj['type'], dest_file_obj['lang'] if dest_file_obj.get('lang') else None)
+
 def migrate_files(diffs, all_files, root):
     flag_filesystem_rescan = False
     flag_filesystem_rescan_list = []
@@ -278,12 +285,8 @@ def migrate_files(diffs, all_files, root):
                 for file_fs in files_fs:
                     for file_es in diffs["InESNotFS"][video]["details"]:
                         try:
-                            prep_directory(root, os.path.dirname(file_fs), file_es["channel_id"])
                             if file_fs != file_es["expected_location"] and file_es["original_location"] != file_es["expected_location"]:
-                                print(f"Moving file `{file_fs}` to `{file_es['expected_location']}`.")
-                                shutil.move(file_fs, file_es["expected_location"])
-                                nmu = '/'.join(file_es["expected_location"].split('/')[2:])
-                                update_es_for_item(video, nmu, file_es['type'], file_es['lang'] if file_es.get('lang') else None)
+                                migration(root, video, file_fs, file_es)
                             else:
                                 print(f"No migration necessary for `{file_fs}`. File is already using the expected naming format.")
                         except Exception as e:
@@ -299,12 +302,8 @@ def migrate_files(diffs, all_files, root):
             print(f"At least 1 file for {video} was detected on your filesystem and in ElasticSearch. Attempting to migrate to the new naming scheme.")
             for file in diffs["InESInFS"][video]["details"]:
                 try:
-                    prep_directory(root, os.path.dirname(file["original_location"]), file["channel_id"])
                     if file["original_location"] != file["expected_location"]:
-                        print(f"Moving file `{file['original_location']}` to `{file['expected_location']}`.")
-                        shutil.move(file['original_location'], file['expected_location'])
-                        nmu = '/'.join(file['expected_location'].split('/')[2:])
-                        update_es_for_item(video,nmu,file['type'], file['lang'] if file.get('lang') else None)
+                        migration(root, video, file['original_location'], file)
                     else:
                         print(f"No migration necessary for `{file['original_location']}`. File is already using the expected naming format.")
                 except Exception as e:
