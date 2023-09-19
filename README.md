@@ -19,10 +19,10 @@ Migration helper for [TubeArchivist](https://github.com/tubearchivist/tubearchiv
 4. If a file exists within ElasticSearch and not on the Filesystem in the `SOURCE_DIR`, you will need to locate the files before attempting to perform a migration. Alternatively, if you perform a manual [Filesystem Rescan](https://docs.tubearchivist.com/settings/actions/#rescan-filesystem), TubeArchivist will remove those entries for you.
 5. This makes several assumptions during the runtime process. If those are incorrect or different from how TubeArchivist expects them to be performed, those specific items may not work properly and will need to be updated manually.
 
+## Additional Arguments
 > [!WARNING]
 > Using the `PERFORM_MIGRATION` action is a destructive process and could cause issues with files. It is recommended to not use it unless advised or after you have reviewed an initial output of what is expected to happen.
 
-## Additional Arguments
 Argument | Flag | Default | Purpose
 :--- | :---: | :---: | :---
 `SOURCE_DIR` | -d | `/youtube` | The source directory that will be searched for videos that need to be migrated. This can be used to specify an individual folder instead of the entire `/youtube` directory[^1].
