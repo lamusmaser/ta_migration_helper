@@ -166,7 +166,7 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                     else:
                         channel_id = get_channel_id(video_id, use_ytdlp, ytdlp_sleep)
                     if channel_id:
-                        expected_location = f"{dir}{channel_id}/{video_id}{os.path.splitext(filename)[-1]}"
+                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}"
                         if not video_files.get(video_id):
                             video_files[video_id] = []
                         vid_type = None
@@ -211,7 +211,7 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, so
                 'channel_id': res[vid_id]['channel_id'],
                 'type': 'video',
                 'original_location': os.path.join(source, res[vid_id]['media_url']),
-                'expected_location': os.path.join(source, res[vid_id]['channel_id'], f"{vid_id}.mp4")
+                'expected_location': os.path.join(os.path.join(source, res[vid_id]['channel_id']), f"{vid_id}.mp4")
             })
             if res[vid_id].get('subs'):
                 for sub in res[vid_id]['subs']:
@@ -219,7 +219,7 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, so
                         'channel_id': res[vid_id]['channel_id'],
                         'type': 'subtitle',
                         'original_location': os.path.join(source, res[vid_id]['sub'][sub]),
-                        'expected_location': os.path.join(source, res[vid_id]['channel_id'], f"{vid_id}.{sub}.vtt"),
+                        'expected_location': os.path.join(os.path.join(source, res[vid_id]['channel_id']), f"{vid_id}.{sub}.vtt"),
                         'lang': res[vid_id]['sub'][sub]
                     })
         results["InESNotFS"][video_id]["details"] = pull
