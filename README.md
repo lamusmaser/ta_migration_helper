@@ -1,5 +1,7 @@
 # ta_migration_helper
-Migration helper for TubeArchivist from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
+> [!NOTE]
+> UNOFFICIAL HELPER SCRIPT
+Migration helper for [TubeArchivist](https://github.com/tubearchivist/tubearchivist) from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
 
 ## Current functionality
 1. Detects videos in filesystem that are not in ElasticSearch.
