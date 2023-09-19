@@ -12,8 +12,12 @@ Migration helper for [TubeArchivist](https://github.com/tubearchivist/tubearchiv
 5. Allow automatic updates to Elasticsearch.
 6. Allow migration of subtitles/other files found.
 
-## Expected next steps
-1. Determine if there are other functions that need to be performed.
+## Limitations
+1. This is expected to run within a running TubeArchivist container instance that is running v0.4.0 and had issues with migrating a larger library of files.
+2. This is only expecting to move `.mp4` and `.vtt` files that align with TubeArchivist downloads. Will not move other files at this time.
+3. If a file exists on the Filesystem in the `SOURCE_DIR` and not within ElasticSearch, you will need to run a manual [Filesystem Rescan](https://docs.tubearchivist.com/settings/actions/#rescan-filesystem) or [Manual Import](https://docs.tubearchivist.com/settings/actions/#manual-media-files-import) to pickup those files. This will be alerted if an automated migration is attempted.
+4. If a file exists within ElasticSearch and not on the Filesystem in the `SOURCE_DIR`, you will need to locate the files before attempting to perform a migration. Alternatively, if you perform a manual [Filesystem Rescan](https://docs.tubearchivist.com/settings/actions/#rescan-filesystem), TubeArchivist will remove those entries for you.
+5. This makes several assumptions during the runtime process. If those are incorrect or different from how TubeArchivist expects them to be performed, those specific items may not work properly and will need to be updated manually.
 
 > [!WARNING]
 > Using the `PERFORM_MIGRATION` action is a destructive process and could cause issues with files. It is recommended to not use it unless advised or after you have reviewed an initial output of what is expected to happen.
