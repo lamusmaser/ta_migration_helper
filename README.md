@@ -1,6 +1,7 @@
-# ta_migration_helper
+# TA Migration Helper [v0.3.6 to v0.4.0]
 > [!NOTE]
 > UNOFFICIAL HELPER SCRIPT
+
 Migration helper for [TubeArchivist](https://github.com/tubearchivist/tubearchivist) from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
 
 ## Current functionality
