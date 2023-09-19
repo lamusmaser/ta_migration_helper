@@ -1,18 +1,16 @@
 # ta_migration_helper
 Migration helper for TubeArchivist from the legacy filenaming convention (v0.3.6 and earlier) to the current naming convention (v0.4.0 and later).
 
-This is expected to run from within the TubeArchivist container, at the `/app` directory. This allows it to see the TubeArchivist helper functions.
-
-Current functionality:
+## Current functionality
 1. Detects videos in filesystem that are not in ElasticSearch.
 2. Detects videos that are in ElasticSearch and not in the filesystem.
 3. Provides and output of what those videos are.
+4. Allow automatic migration for those files that are detected.
+5. Allow automatic updates to Elasticsearch.
+6. Allow migration of subtitles/other files found.
 
-Expected next steps:
-1. Allow automatic migration for those files that are detected.
-2. Allow automatic updates to Elasticsearch.
-3. Allow migration of subtitles/other files found.
-4. Determine if there are other functions that need to be performed.
+## Expected next steps
+1. Determine if there are other functions that need to be performed.
 
 > [!WARNING]
 > Using the `PERFORM_MIGRATION` action is a destructive process and could cause issues with files. It is recommended to not use it unless advised or after you have reviewed an initial output of what is expected to happen.
@@ -28,6 +26,10 @@ Argument | Flag | Default | Purpose
 [^1]: This could cause issues with the migration portion, as it will be relative to the `SOURCE_DIR`.
 [^2]: This is a destructive process and could cause issues with files.
   There is a ten second barrier after analysis to allow cancellation of the script before starting the migration process - once it is started, it **should not be interrupted**.
+
+
+## Running Script
+This is expected to run from within the TubeArchivist container, at the `/app` directory. This allows it to see the TubeArchivist helper functions.
 
 You can run this script with the optional flags. For example:
 ```
