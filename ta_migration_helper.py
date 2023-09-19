@@ -166,7 +166,7 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                     else:
                         channel_id = get_channel_id(video_id, use_ytdlp, ytdlp_sleep)
                     if channel_id:
-                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}"
+                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
                         if not video_files.get(video_id):
                             video_files[video_id] = []
                         vid_type = None
