@@ -1,6 +1,9 @@
 import json
 import os
 import re
+import shutil
+import stat
+import string
 import time
 
 import yt_dlp
@@ -138,9 +141,12 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                             vid_type = 'subtitle'
                         else:
                             vid_type = 'other'
-                        video_files[video_id].append({'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location})
+                        det = {'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location}
+                        if vid_type == 'subtitle':
+                            det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
+                        video_files[video_id].append(det)
 
-def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files):
+def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, source):
     videos_in_fs_not_in_es = fs_video_ids - es_video_ids
     videos_in_es_not_in_fs = es_video_ids - fs_video_ids
     videos_in_both = fs_video_ids.intersection(es_video_ids)
@@ -168,16 +174,17 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files):
             pull.append({
                 'channel_id': res[vid_id]['channel_id'],
                 'type': 'video',
-                'original_location': 'NOT_AVAILABLE',
-                'expected_location': f"/youtube/{res[vid_id]['media_url']}"
+                'original_location': os.path.join(source, res[vid_id]['media_url']),
+                'expected_location': os.path.join(source, res[vid_id]['channel_id'], f"{vid_id}.mp4")
             })
             if res[vid_id].get('subs'):
                 for sub in res[vid_id]['subs']:
                     pull.append({
                         'channel_id': res[vid_id]['channel_id'],
                         'type': 'subtitle',
-                        'original_location': 'NOT_AVAILABLE',
-                        'expected_location': f"/youtube/{res[vid_id]['sub'][sub]}"
+                        'original_location': os.path.join(source, res[vid_id]['sub'][sub]),
+                        'expected_location': os.path.join(source, res[vid_id]['channel_id'], f"{vid_id}.{sub}.vtt"),
+                        'lang': res[vid_id]['sub'][sub]
                     })
         results["InESNotFS"][video_id]["details"] = pull
     results["InESInFS"] = {}
@@ -187,6 +194,77 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files):
         results["InESInFS"][video_id]["details"] = video_files[video_id]
     print(json.dumps(results))
     return results
+
+def prep_directory(root, source, channel_id):
+    dest_directory_path = os.path.join(root, channel_id)
+    try:
+        os.makedirs(dest_directory_path, exist_ok=True)
+        source_stat = os.stat(source)
+        uid = source_stat.st_uid
+        gid = source_stat.st_gid
+        permissions = stat.S_IMODE(source_stat.st_mode)
+        os.chown(dest_directory_path, uid, gid)
+        os.chmod(dest_directory_path, permissions)
+    except Exception as e:
+        print(f"An error occurred during the directory prep function: {e}")
+
+def update_es_for_item(id, nmu, vid_type, lang):
+    new_media_url = nmu
+    if vid_type == 'subtitle':
+        res = ElasticWrap("ta_video/_search").get(data={"query": {"match":{"_id": id}}})
+        if res[1] == 200:
+            res = res[0]
+        subtitles = res['hits']['hits'][0]['_source']['subtitles']
+        for sub in subtitles:
+            if sub['lang'] == lang:
+                subtitles[sub]['media_url'] = new_media_url
+        source = {"doc": {"subtitles": subtitles}}
+    else:
+        source = {"doc": {"media_url": new_media_url}}
+    print(f"Updating ElasticSearch values for {id}'s{' '+lang+' ' if lang else ' '}{vid_type}.")
+    res = ElasticWrap(f"ta_video/_update/{id}").post(data = source)
+    try:
+        if res[1] == 200 and res[0]['_shards']['total'] == res[0]['_shards']['successful']:
+            print(f"ElasticSearch was updated successfully.")
+        else:
+            print(f"ElasticSearch was not updated successfully.")
+    except Exception as e:
+        print(f"Exception occurred during update of ElasticSearch: {e}")
+
+def migrate_files(diffs, all_files, root):
+    flag_filesystem_rescan = False
+    flag_filesystem_rescan_list = []
+    if diffs.get("InESNotFS"):
+        for video in diffs["InESNotFS"].keys():
+            if diffs["InESNotFS"][video].get("secondary_result") and diffs["InESNotFS"][video]["secondary_result"] == "Secondary Search Found Result":
+                print(f"At least 1 file for {video} was detected on your filesystem. Attempting to migrate those files to the new naming scheme.")
+                files_fs = check_filesystem_for_video_ids(all_files, [video])
+                for file_fs in files_fs:
+                    for file_es in diffs["InESNotFS"][video]["details"]:
+                        try:
+                            prep_directory(root, os.path.dirname(file_fs), file_es["channel_id"])
+                            if file_fs != file_es["expected_location"] and file_es["original_location"] != file_es["expected_location"]:
+                                print(f"Moving file `{file_fs}` to `{file_es['expected_location']}`.")
+                                shutil.move(file_fs, file_es["expected_location"])
+                                nmu = '/'.join(file_es["expected_location"].split('/')[2:])
+                                update_es_for_item(video, nmu, file_es['type'], file_es['lang'] if file_es.get('lang') else None)
+                            else:
+                                print(f"No migration necessary for `{file_fs}`. File is already using the expected naming format.")
+                        except Exception as e:
+                            print(f"An issue occurred during the migration of files for ID {video}. Please review the exception: {e}")
+                            continue
+            elif diffs["InESNotFS"][video].get("secondary_result") and diffs["InESNotFS"][video]["secondary_result"] == "Not Found In Filesystem":
+                print(f"Files for {video} do not exist in filesystem. A filesystem rescan will remove video {video} from your TubeArchivist instance.")
+                flag_filesystem_rescan = True
+                flag_filesystem_rescan_list.append(video)
+                continue
+    if diffs.get("InESInFS"):
+        True
+    if diffs.get("InFSNotES"):
+        if flag_filesystem_rescan:
+            print(f"A filesystem rescan is expected to be performed to add these videos to your TubeArchivist instance. It was noted that there are some videos in ElasticSearch that do not exist in your filesystem. Please retain those records to download, import, or migrate those videos again in the future.")
+            print(flag_filesystem_rescan_list)
+        True
 
 def main():
     default_source = "/youtube"
@@ -208,10 +286,13 @@ def main():
     es_video_ids = set(es_video_ids)
 
     # Determine differences
-    diffs = compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files)
+    diffs = compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, source_dir)
     if perform_migration:
         print("This is a destructive action and could cause loss of data if interrupted. Giving ten seconds before initiating migration action...")
         time.sleep(10)
+        print("Starting the migration process. PLEASE DO NOT INTERRUPT THIS PROCESS.")
+        migrate_files(diffs, all_files, source_dir)
+        print("Ending the migration process.")
 
 if __name__ == "main":
     print("Starting script...")
