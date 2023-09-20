@@ -89,6 +89,7 @@ def get_channel_id(video_id, use_ytdlp, ytdlp_sleep):
 
 # Function to retrieve video IDs from Elasticsearch
 def get_video_ids_from_es():
+    print("Pulling video IDs from ElasticSearch...")
     res = IndexPaginate('ta_video',{}).get_results()
     video_ids = {}
     for hit in res:
@@ -187,10 +188,13 @@ def compare_es_filesystem(video_files, all_files, source):
     fs_video_ids = set(video_files.keys())
     es_video_ids = set(es_video_ids.keys())
 
+    print("Comparing Filesystem and ElasticSearch results.")
     videos_in_fs_not_in_es = fs_video_ids - es_video_ids
     videos_in_es_not_in_fs = es_video_ids - fs_video_ids
     videos_in_both = fs_video_ids.intersection(es_video_ids)
 
+    print(f"Filesystem videos: {fs_video_ids}")
+    print(f"ElasticSearch videos: {es_video_ids}")
     results = {}
 
     results["InFSNotES"] = {}
