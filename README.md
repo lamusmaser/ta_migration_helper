@@ -43,4 +43,4 @@ You can run this script with the optional flags. For example:
 python ta_migration_helper.py -s /path/to/custom/directory -Y -S 5 -M
 ```
 
-This would set the source directory to `/path/to/custom/directory`, disable YouTube calls via `yt-dlp`, set the sleep time to 5 seconds between YouTube calls, and enable migration.
+This would set the source directory to `/path/to/custom/directory`, enable YouTube calls via `yt-dlp`, set the sleep time to 5 seconds between YouTube calls, and enable migration.
