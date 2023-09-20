@@ -308,6 +308,8 @@ def migrate_files(diffs, all_files, root):
                 flag_filesystem_rescan = True
                 flag_filesystem_rescan_list.append(video)
                 continue
+            else:
+                print(f"Files for {video} did not meet appropriate criteria. Please review the JSON output and determine why this occurred.")
     if diffs.get("InESInFS"):
         for video in diffs["InESInFS"].keys():
             print(f"At least 1 file for {video} was detected on your filesystem and in ElasticSearch. Attempting to migrate to the new naming scheme.")
