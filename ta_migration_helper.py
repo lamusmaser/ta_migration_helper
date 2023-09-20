@@ -24,7 +24,7 @@ class FakeLogger(object):
 
 def parse_args():
     default_source = "/youtube"
-    default_use_ytdlp = True
+    default_use_ytdlp = False
     default_ytdlp_sleep = 3
     default_perform_migration = False
     parser = argparse.ArgumentParser(description="TA Migration Helper Script")
