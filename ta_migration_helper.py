@@ -37,7 +37,7 @@ def parse_args():
     parser.add_argument(
         '-Y', '--USE_YTDLP',
         default=default_use_ytdlp,
-        action='store_true',
+        action='store_false',
         help="Disable calls to YouTube via yt-dlp. If set, it will only search ElasticSearch."
     )
     parser.add_argument(
