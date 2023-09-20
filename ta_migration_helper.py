@@ -182,7 +182,11 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                         video_files[video_id].append(det)
     return video_files, all_files
 
-def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, source):
+def compare_es_filesystem(video_files, all_files, source):
+    es_video_ids = get_video_ids_from_es()
+    fs_video_ids = set(video_files.keys())
+    es_video_ids = set(es_video_ids.keys())
+
     videos_in_fs_not_in_es = fs_video_ids - es_video_ids
     videos_in_es_not_in_fs = es_video_ids - fs_video_ids
     videos_in_both = fs_video_ids.intersection(es_video_ids)
@@ -229,7 +233,9 @@ def compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, so
         results["InESInFS"][video_id] = {}
         results["InESInFS"][video_id]["secondary_result"] = "Not Required - Present In Both"
         results["InESInFS"][video_id]["details"] = video_files[video_id]
+    print("-"*150)
     print(json.dumps(results))
+    print("-"*150)
     return results
 
 def prep_directory(root, source, channel_id):
@@ -325,14 +331,8 @@ def main():
         print(f"The directory `{source_dir}` does not exist. Exiting.")
         return 1
     video_files, all_files = review_filesystem(source_dir, use_ytdlp, ytdlp_sleep)
-    # Get video IDs from Elasticsearch
-    es_video_ids = get_video_ids_from_es()
-    # Create dictionaries for file system and Elasticsearch video IDs
-    fs_video_ids = set(video_files.keys())
-    es_video_ids = set(es_video_ids)
 
-    # Determine differences
-    diffs = compare_es_filesystem(fs_video_ids, es_video_ids, video_files, all_files, source_dir)
+    diffs = compare_es_filesystem(video_files, all_files, source_dir)
     if perform_migration:
         print("This is a destructive action and could cause loss of data if interrupted. Giving ten seconds before initiating migration action...")
         time.sleep(10)
