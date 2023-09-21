@@ -62,6 +62,9 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def dprint(value, **kwargs):
+    if debug:
+        print(f"DEBUG:\t{value}", **kwargs)
 
 # Function to extract video IDs from filenames
 def extract_video_id(filename):
@@ -78,6 +81,7 @@ def get_channel_id(video_id, use_ytdlp, ytdlp_sleep):
             try:
                 time.sleep(ytdlp_sleep)
                 info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
+                dprint(f"Channel extracted from YTDL: {info.get('channel_id')}")
                 return info.get('channel_id')
             except yt_dlp.utils.DownloadError as e:
                 try:
@@ -146,6 +150,7 @@ def check_channel_id_from_es(video_id):
     return channel_id
 
 def check_filesystem_for_video_ids(video_list, video_ids):
+    dprint(f"Scanning through previously iterated filesystem list for the following video(s): {video_ids}")
     final_list = [nm for ps in video_ids for nm in video_list if ps in nm]
     return final_list
 
@@ -154,6 +159,7 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
     # Walk through the /youtube directory
     print("Calculating number of files to process...")
     file_count = sum(len(files) for _, _, files in os.walk(dir))
+    dprint(f"Total files found: {file_count}")
     video_files = {}
     all_files = []
     current_count = 0
@@ -188,8 +194,12 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                         if vid_type == 'subtitle':
                             det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
                         video_files[video_id].append(det)
+                    else:
+                        print(f"Could not extract channel ID for `{filename}`.")
                 else:
                     print(f"Could not extract video ID for `{filename}`.")
+    dprint(f"All video files: {video_files}.")
+    dprint(f"All files in filesystem: {all_files}")
     return video_files, all_files
 
 def compare_es_filesystem(video_files, all_files, source):
@@ -202,8 +212,8 @@ def compare_es_filesystem(video_files, all_files, source):
     videos_in_es_not_in_fs = es_video_ids_set - fs_video_ids_set
     videos_in_both = fs_video_ids_set.intersection(es_video_ids_set)
 
-    print(f"Filesystem videos: {fs_video_ids_set}")
-    print(f"ElasticSearch videos: {es_video_ids_set}")
+    dprint(f"Filesystem videos: {fs_video_ids_set}")
+    dprint(f"ElasticSearch videos: {es_video_ids_set}")
     results = {}
 
     results["InFSNotES"] = {}
@@ -277,7 +287,7 @@ def update_es_for_item(id, nmu, vid_type, lang):
         source = {"doc": {"subtitles": subtitles}}
     else:
         source = {"doc": {"media_url": new_media_url}}
-    print(f"Updating ElasticSearch values for {id}'s{' '+lang+' ' if lang else ' '}{vid_type}.")
+    print(f"Updating ElasticSearch values for {id}'s{' ' + lang + ' ' if lang else ' '}{vid_type}.")
     res = ElasticWrap(f"ta_video/_update/{id}").post(data = source)
     try:
         if res[1] == 200 and res[0]['_shards']['total'] == res[0]['_shards']['successful']:
