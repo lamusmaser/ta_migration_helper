@@ -29,6 +29,7 @@ Argument | Flag | Default | Purpose
 `USE_YTDLP` | -Y | `True` | Allows the user to disable calls to YouTube via `yt-dlp`. This will not allow any calls to YouTube and will instead only search ElasticSearch. 
 `YTDLP_SLEEP` | -s | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
 `PERFORM_MIGRATION` | -M | `False` | If set to `False`, this will perform a review of what files need to be migrated and why. If set to `True`, this will attempt to migrate all files[^2]. 
+`DEBUG` | -B | `False` | If set to `True`, this will show debugging outputs.
 
 [^1]: This could cause issues with the migration portion, as it will be relative to the `SOURCE_DIR`.
 [^2]: This is a destructive process and could cause issues with files.
