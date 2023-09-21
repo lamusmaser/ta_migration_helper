@@ -158,8 +158,8 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
             all_files.append(os.path.join(root,filename))
             match = re.search(rx, filename, re.IGNORECASE)
             if match:
-                print(f"[{current_count}/{file_count}] Matching file: {filename}")
                 video_id = extract_video_id(filename)
+                print(f"[{current_count}/{file_count}] Matching file: {filename} | Extracted Video ID: {video_id}")
                 if video_id:
                     original_location = os.path.join(root, filename)
                     if video_files.get(video_id):
@@ -181,6 +181,8 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                         if vid_type == 'subtitle':
                             det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
                         video_files[video_id].append(det)
+                else:
+                    print(f"Could not extract video ID for `{filename}`.")
     return video_files, all_files
 
 def compare_es_filesystem(video_files, all_files, source):
