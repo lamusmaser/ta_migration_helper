@@ -91,7 +91,10 @@ def get_channel_id(video_id):
                     return None
     else:
         try:
-            return check_channel_id_from_es(video_id)
+            es_channel_id = check_channel_id_from_es(video_id)
+            if es_channel_id:
+                return es_channel_id
+            return None 
         except:
             e = "USE_YTDLP set to False. YouTube Download Error does not exist."
             print(f"Failed to find video ID from YouTube or ElasticSearch for {video_id}. YouTube download error: {e}")
@@ -177,6 +180,9 @@ def review_filesystem(dir):
                     original_location = os.path.join(root, filename)
                     if video_files.get(video_id):
                         channel_id = video_files[video_id][0]['channel_id']
+                    elif os.path.exists(os.path.join(root,"channel.id")):
+                        with open(os.path.join(root,"channel.id"), 'r') as channel_file:
+                            channel_id = channel_file.read().strip()
                     else:
                         channel_id = get_channel_id(video_id)
                     if channel_id:

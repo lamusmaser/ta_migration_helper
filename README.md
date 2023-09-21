@@ -18,6 +18,7 @@ Migration helper for [TubeArchivist](https://github.com/tubearchivist/tubearchiv
 3. If a file exists on the Filesystem in the `SOURCE_DIR` and not within ElasticSearch, you will need to run a manual [Filesystem Rescan](https://docs.tubearchivist.com/settings/actions/#rescan-filesystem) or [Manual Import](https://docs.tubearchivist.com/settings/actions/#manual-media-files-import) to pickup those files. This will be alerted if an automated migration is attempted.
 4. If a file exists within ElasticSearch and not on the Filesystem in the `SOURCE_DIR`, you will need to locate the files before attempting to perform a migration. Alternatively, if you perform a manual [Filesystem Rescan](https://docs.tubearchivist.com/settings/actions/#rescan-filesystem), TubeArchivist will remove those entries for you.
 5. This makes several assumptions during the runtime process. If those are incorrect or different from how TubeArchivist expects them to be performed, those specific items may not work properly and will need to be updated manually.
+6. If a channel no longer exists for `yt-dlp` to find or within ElasticSearch, you will need to include a `channel.id` file within the channel's directory that includes its ID.
 
 ## Additional Arguments
 > [!WARNING]
