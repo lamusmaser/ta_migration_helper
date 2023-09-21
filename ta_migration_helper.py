@@ -59,11 +59,11 @@ def parse_args():
         action='store_true',
         help="If set to True, this will show debugging outputs."
     )
+    global args
     args = parser.parse_args()
-    return args
 
 def dprint(value, **kwargs):
-    if debug:
+    if args.DEBUG:
         print(f"DEBUG:\t{value}", **kwargs)
 
 # Function to extract video IDs from filenames
@@ -74,12 +74,12 @@ def extract_video_id(filename):
     return None
 
 # Function to get channel ID using yt-dlp
-def get_channel_id(video_id, use_ytdlp, ytdlp_sleep):
-    if use_ytdlp:
+def get_channel_id(video_id):
+    if args.USE_YTDLP:
         ydl_opts = {'quiet': True, 'logger': FakeLogger()}
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             try:
-                time.sleep(ytdlp_sleep)
+                time.sleep(args.YTDLP_SLEEP)
                 info = ydl.extract_info(f"https://www.youtube.com/watch?v={video_id}", download=False)
                 dprint(f"Channel extracted from YTDL: {info.get('channel_id')}")
                 return info.get('channel_id')
@@ -155,7 +155,7 @@ def check_filesystem_for_video_ids(video_list, video_ids):
     return final_list
 
 
-def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
+def review_filesystem(dir):
     # Walk through the /youtube directory
     print("Calculating number of files to process...")
     file_count = sum(len(files) for _, _, files in os.walk(dir))
@@ -178,7 +178,7 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
                     if video_files.get(video_id):
                         channel_id = video_files[video_id][0]['channel_id']
                     else:
-                        channel_id = get_channel_id(video_id, use_ytdlp, ytdlp_sleep)
+                        channel_id = get_channel_id(video_id)
                     if channel_id:
                         expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
                         if not video_files.get(video_id):
@@ -347,20 +347,15 @@ def migrate_files(diffs, all_files, root):
             print("No action taken at this time. Please perform the action from within the TubeArchivist GUI.")
 
 def main():
-    args = parse_args()
+    parse_args()
     source_dir = args.SOURCE_DIR
-    use_ytdlp = args.USE_YTDLP
-    ytdlp_sleep = args.YTDLP_SLEEP
-    perform_migration = args.PERFORM_MIGRATION
-    global debug
-    debug = args.DEBUG
     if not os.path.exists(source_dir):
         print(f"The directory `{source_dir}` does not exist. Exiting.")
         return 1
-    video_files, all_files = review_filesystem(source_dir, use_ytdlp, ytdlp_sleep)
+    video_files, all_files = review_filesystem(source_dir)
 
     diffs = compare_es_filesystem(video_files, all_files, source_dir)
-    if perform_migration:
+    if args.PERFORM_MIGRATION:
         print("This is a destructive action and could cause loss of data if interrupted. Giving ten seconds before initiating migration action...")
         time.sleep(10)
         print("Starting the migration process. PLEASE DO NOT INTERRUPT THIS PROCESS.")
