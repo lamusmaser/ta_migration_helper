@@ -27,6 +27,7 @@ def parse_args():
     default_use_ytdlp = True
     default_ytdlp_sleep = 3
     default_perform_migration = False
+    default_debug = False
     parser = argparse.ArgumentParser(description="TA Migration Helper Script")
     # Optional arguments
     parser.add_argument(
@@ -51,6 +52,12 @@ def parse_args():
         default=default_perform_migration,
         action='store_true',
         help="If set to True, this will attempt to migrate all files. If False, it will perform a review of what files need to be migrated and why."
+    )
+    parser.add_argument(
+        '-B', '--DEBUG',
+        default=default_debug,
+        action='store_true',
+        help="If set to True, this will show debugging outputs."
     )
     args = parser.parse_args()
     return args
@@ -335,6 +342,8 @@ def main():
     use_ytdlp = args.USE_YTDLP
     ytdlp_sleep = args.YTDLP_SLEEP
     perform_migration = args.PERFORM_MIGRATION
+    global debug
+    debug = args.DEBUG
     if not os.path.exists(source_dir):
         print(f"The directory `{source_dir}` does not exist. Exiting.")
         return 1
