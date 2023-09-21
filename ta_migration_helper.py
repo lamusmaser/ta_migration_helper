@@ -187,16 +187,16 @@ def review_filesystem(dir, use_ytdlp, ytdlp_sleep):
 
 def compare_es_filesystem(video_files, all_files, source):
     es_video_ids = get_video_ids_from_es()
-    fs_video_ids = set(video_files.keys())
-    es_video_ids = set(es_video_ids.keys())
+    fs_video_ids_set = set(video_files.keys())
+    es_video_ids_set = set(es_video_ids.keys())
 
     print("Comparing Filesystem and ElasticSearch results.")
-    videos_in_fs_not_in_es = fs_video_ids - es_video_ids
-    videos_in_es_not_in_fs = es_video_ids - fs_video_ids
-    videos_in_both = fs_video_ids.intersection(es_video_ids)
+    videos_in_fs_not_in_es = fs_video_ids_set - es_video_ids_set
+    videos_in_es_not_in_fs = es_video_ids_set - fs_video_ids_set
+    videos_in_both = fs_video_ids_set.intersection(es_video_ids_set)
 
-    print(f"Filesystem videos: {fs_video_ids}")
-    print(f"ElasticSearch videos: {es_video_ids}")
+    print(f"Filesystem videos: {fs_video_ids_set}")
+    print(f"ElasticSearch videos: {es_video_ids_set}")
     results = {}
 
     results["InFSNotES"] = {}
