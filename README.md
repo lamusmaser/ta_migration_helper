@@ -31,6 +31,7 @@ Argument | Flag | Default | Purpose
 `YTDLP_SLEEP` | -s | `3` | Number of seconds to wait between each call to YouTube when using `yt-dlp`. Value will not be used if `USE_YTDLP` is set to `False`.
 `PERFORM_MIGRATION` | -M | `False` | If set to `False`, this will perform a review of what files need to be migrated and why. If set to `True`, this will attempt to migrate all files[^2]. 
 `DEBUG` | -B | `False` | If set to `True`, this will show debugging outputs.
+`DRY_RUN` | -r | `False` | If set to `True` and `PERFORM_MIGRATION` is `True`, then it will only show what it expects to change. All details are preceeded with a `DRY_RUN` statement.
 
 [^1]: This could cause issues with the migration portion, as it will be relative to the `SOURCE_DIR`.
 [^2]: This is a destructive process and could cause issues with files.

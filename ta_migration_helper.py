@@ -28,6 +28,7 @@ def parse_args():
     default_ytdlp_sleep = 3
     default_perform_migration = False
     default_debug = False
+    default_dry_run = False
     parser = argparse.ArgumentParser(description="TA Migration Helper Script")
     # Optional arguments
     parser.add_argument(
@@ -58,6 +59,12 @@ def parse_args():
         default=default_debug,
         action='store_true',
         help="If set to True, this will show debugging outputs."
+    )
+    parser.add_argument(
+        '-r', '--DRY_RUN',
+        default=default_dry_run,
+        action='store_true',
+        help="If set to True and PERFORM_MIGRATION is True, then it will only show what it expects to change. All details are preceeded with a DRY_RUN statement."
     )
     global args
     args = parser.parse_args()
@@ -294,22 +301,31 @@ def update_es_for_item(id, nmu, vid_type, lang):
         source = {"doc": {"subtitles": subtitles}}
     else:
         source = {"doc": {"media_url": new_media_url}}
-    print(f"Updating ElasticSearch values for {id}'s{' ' + lang + ' ' if lang else ' '}{vid_type}.")
-    res = ElasticWrap(f"ta_video/_update/{id}").post(data = source)
-    try:
-        if res[1] == 200 and res[0]['_shards']['total'] == res[0]['_shards']['successful']:
-            print(f"ElasticSearch was updated successfully.")
-        else:
-            print(f"ElasticSearch was not updated successfully.")
-    except Exception as e:
-        print(f"Exception occurred during update of ElasticSearch: {e}")
+    if args.DRY_RUN:
+        print(f"DRY_RUN:\tUpdating ElasticSearch values for {id}'s{' ' + lang + ' ' if lang else ' '}{vid_type} | {source}")
+    else:
+        print(f"Updating ElasticSearch values for {id}'s{' ' + lang + ' ' if lang else ' '}{vid_type}.")
+        res = ElasticWrap(f"ta_video/_update/{id}").post(data = source)
+        try:
+            if res[1] == 200 and res[0]['_shards']['total'] == res[0]['_shards']['successful']:
+                print(f"ElasticSearch was updated successfully.")
+            else:
+                print(f"ElasticSearch was not updated successfully.")
+        except Exception as e:
+            print(f"Exception occurred during update of ElasticSearch: {e}")
 
 def migration(root, id, source_file, dest_file_obj):
-    prep_directory(root, os.path.dirname(source_file), dest_file_obj["channel_id"])
-    print(f"Moving file `{source_file}` to `{dest_file_obj['expected_location']}`.")
-    shutil.move(source_file, dest_file_obj["expected_location"])
-    nmu = '/'.join(dest_file_obj["expected_location"].split('/')[2:])
-    update_es_for_item(id, nmu, dest_file_obj['type'], dest_file_obj['lang'] if dest_file_obj.get('lang') else None)
+    if args.DRY_RUN:
+        print(f"DRY_RUN:\tDirectory would be created or confirmed as created here: {os.path.join(root, dest_file_obj['channel_id'])}")
+        print(f"DRY_RUN:\tMoving file `{source_file}` to `{dest_file_obj['expected_location']}`.")
+        nmu = '/'.join(dest_file_obj["expected_location"].split('/')[2:])
+        update_es_for_item(id, nmu, dest_file_obj['type'], dest_file_obj['lang'] if dest_file_obj.get('lang') else None)
+    else:
+        prep_directory(root, os.path.dirname(source_file), dest_file_obj["channel_id"])
+        print(f"Moving file `{source_file}` to `{dest_file_obj['expected_location']}`.")
+        shutil.move(source_file, dest_file_obj["expected_location"])
+        nmu = '/'.join(dest_file_obj["expected_location"].split('/')[2:])
+        update_es_for_item(id, nmu, dest_file_obj['type'], dest_file_obj['lang'] if dest_file_obj.get('lang') else None)
 
 def migrate_files(diffs, all_files, root):
     flag_filesystem_rescan = False
