@@ -320,9 +320,16 @@ def migrate_files(diffs, all_files, root):
                 print(f"At least 1 file for {video} was detected on your filesystem. Attempting to migrate those files to the new naming scheme.")
                 files_fs = check_filesystem_for_video_ids(all_files, [video])
                 for file_fs in files_fs:
+                    file_fs_type = None
+                    if os.path.splitext(file_fs)[-1] in ['.mp4']:
+                            vid_type = 'video'
+                    elif os.path.splitext(file_fs)[-1] in ['.vtt']:
+                        vid_type = 'subtitle'
+                    else:
+                        vid_type = 'other'
                     for file_es in diffs["InESNotFS"][video]["details"]:
                         try:
-                            if file_fs != file_es["expected_location"] and file_es["original_location"] != file_es["expected_location"]:
+                            if file_fs != file_es["expected_location"] and file_es["original_location"] != file_es["expected_location"] and file_fs_type == file_es["type"]:
                                 migration(root, video, file_fs, file_es)
                             else:
                                 print(f"No migration necessary for `{file_fs}`. File is already using the expected naming format.")
