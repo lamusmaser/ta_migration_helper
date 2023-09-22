@@ -194,6 +194,7 @@ def review_filesystem(dir):
                             vid_type = 'video'
                         elif os.path.splitext(filename)[-1] in ['.vtt']:
                             vid_type = 'subtitle'
+                            expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))}{os.path.splitext(filename)[-1]}")
                         else:
                             vid_type = 'other'
                         det = {'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location}
