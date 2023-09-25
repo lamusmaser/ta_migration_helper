@@ -196,7 +196,9 @@ def review_filesystem(dir):
                         channel_id = video_files[video_id][0]['channel_id']
                     elif os.path.exists(os.path.join(root,"channel.id")):
                         with open(os.path.join(root,"channel.id"), 'r') as channel_file:
-                            channel_id = channel_file.read().strip()
+                            for line in channel_file.readlines():
+                                if len(line) > 0:
+                                    channel_id = line.strip()
                     else:
                         channel_id = get_channel_id(video_id)
                     if channel_id:
