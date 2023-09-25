@@ -1,5 +1,6 @@
 import argparse
 import json
+import mimetypes
 import os
 import re
 import shutil
@@ -65,6 +66,12 @@ def parse_args():
         default=default_dry_run,
         action='store_true',
         help="If set to True and PERFORM_MIGRATION is True, then it will only show what it expects to change. All details are preceeded with a DRY_RUN statement."
+    )
+    parser.add_argument(
+        '-g', '--GUESS_TYPES',
+        default=default_dry_run,
+        action='store_true',
+        help="If set to True, will attempt to guess the type of the files by looking at the file itself. Decreases chances of false positives based on file extension, but does access the file and can slow down the analysis."
     )
     global args
     args = parser.parse_args()
@@ -197,6 +204,27 @@ def review_filesystem(dir):
                         if not video_files.get(video_id):
                             video_files[video_id] = []
                         vid_type = None
+                    if args.GUESS_TYPES:
+                        if "video" in mimetypes.guess_type(filename)[0]:
+                            vid_type = 'video'
+                        elif None in mimetypes.guess_type(filename)[0]:
+                            try:
+                                with open(filename, 'r') as f:
+                                    lines = f.readlines()
+                            except Exception as e:
+                                print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
+                                vid_type = 'other'
+                            if "WEBVTT" in lines[0]:
+                                vid_type = 'subtitle'
+                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                for line in lines:
+                                    if "Language: " in line:
+                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{line.strip().split()[-1]}{os.path.splitext(filename)[-1]}")
+                            else:
+                                vid_type = 'other'
+                        else:
+                            vid_type = 'other'
+                    else:
                         if os.path.splitext(filename)[-1] in ['.mp4']:
                             vid_type = 'video'
                         elif os.path.splitext(filename)[-1] in ['.vtt']:
@@ -337,12 +365,25 @@ def migrate_files(diffs, all_files, root):
                 files_fs = check_filesystem_for_video_ids(all_files, [video])
                 for file_fs in files_fs:
                     file_fs_type = None
-                    if os.path.splitext(file_fs)[-1] in ['.mp4']:
+                    if args.GUESS_TYPES:
+                        if "video" in mimetypes.guess_type(file_fs)[0]:
                             vid_type = 'video'
-                    elif os.path.splitext(file_fs)[-1] in ['.vtt']:
-                        vid_type = 'subtitle'
+                        elif None in mimetypes.guess_type(file_fs)[0]:
+                            with open(file_fs, 'r') as f:
+                                firstline = f.readline().strip('\n')
+                            if "WEBVTT" in firstline:
+                                vid_type = 'subtitle'
+                            else:
+                                vid_type = 'other'
+                        else:
+                            vid_type = 'other'
                     else:
-                        vid_type = 'other'
+                        if os.path.splitext(file_fs)[-1] in ['.mp4']:
+                                vid_type = 'video'
+                        elif os.path.splitext(file_fs)[-1] in ['.vtt']:
+                            vid_type = 'subtitle'
+                        else:
+                            vid_type = 'other'
                     for file_es in diffs["InESNotFS"][video]["details"]:
                         try:
                             if file_fs != file_es["expected_location"] and file_es["original_location"] != file_es["expected_location"] and file_fs_type == file_es["type"]:
