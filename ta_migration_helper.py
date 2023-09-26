@@ -78,7 +78,7 @@ def parse_args():
     if args.DEBUG:
         dprint("Arguments provided:")
         for arg in vars(args):
-            dprint(arg, getattr(args, arg))
+            dprint(f"{arg}: {getattr(args, arg)}")
 
 
 def dprint(value, **kwargs):
