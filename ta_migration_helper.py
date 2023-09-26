@@ -75,6 +75,11 @@ def parse_args():
     )
     global args
     args = parser.parse_args()
+    if args.DEBUG:
+        dprint("Arguments provided:")
+        for arg in vars(args):
+            dprint(arg, getattr(args, arg))
+
 
 def dprint(value, **kwargs):
     if args.DEBUG:
