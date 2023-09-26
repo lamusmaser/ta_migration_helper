@@ -207,24 +207,27 @@ def review_filesystem(dir):
                             video_files[video_id] = []
                         vid_type = None
                         if args.GUESS_TYPES:
-                            if "video" in mimetypes.guess_type(filename)[0]:
-                                vid_type = 'video'
-                            elif mimetypes.guess_type(filename)[0] == None:
-                                try:
-                                    with open(filename, 'r') as f:
-                                        lines = f.readlines()
-                                except Exception as e:
-                                    print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
-                                    vid_type = 'other'
-                                if "WEBVTT" in lines[0]:
-                                    vid_type = 'subtitle'
-                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
-                                    for line in lines:
-                                        if "Language: " in line:
-                                            expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{line.strip().split()[-1]}{os.path.splitext(filename)[-1]}")
+                            try:
+                                if mimetypes.guess_type(filename)[0] == None:
+                                    try:
+                                        with open(filename, 'r') as f:
+                                            lines = f.readlines()
+                                    except Exception as e:
+                                        print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
+                                        vid_type = 'other'
+                                    if "WEBVTT" in lines[0]:
+                                        vid_type = 'subtitle'
+                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                        for line in lines:
+                                            if "Language: " in line:
+                                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{line.strip().split()[-1]}{os.path.splitext(filename)[-1]}")
+                                    else:
+                                        vid_type = 'other'
+                                elif "video" in mimetypes.guess_type(filename)[0]:
+                                    vid_type = 'video'
                                 else:
                                     vid_type = 'other'
-                            else:
+                            except TypeError as e:
                                 vid_type = 'other'
                         else:
                             if os.path.splitext(filename)[-1] in ['.mp4']:
@@ -368,16 +371,19 @@ def migrate_files(diffs, all_files, root):
                 for file_fs in files_fs:
                     file_fs_type = None
                     if args.GUESS_TYPES:
-                        if "video" in mimetypes.guess_type(file_fs)[0]:
-                            vid_type = 'video'
-                        elif mimetypes.guess_type(file_fs)[0] == None:
-                            with open(file_fs, 'r') as f:
-                                firstline = f.readline().strip('\n')
-                            if "WEBVTT" in firstline:
-                                vid_type = 'subtitle'
+                        try:
+                            if mimetypes.guess_type(file_fs)[0] == None:
+                                with open(file_fs, 'r') as f:
+                                    firstline = f.readline().strip('\n')
+                                if "WEBVTT" in firstline:
+                                    vid_type = 'subtitle'
+                                else:
+                                    vid_type = 'other'
+                            elif "video" in mimetypes.guess_type(file_fs)[0]:
+                                vid_type = 'video'
                             else:
                                 vid_type = 'other'
-                        else:
+                        except TypeError as e:
                             vid_type = 'other'
                     else:
                         if os.path.splitext(file_fs)[-1] in ['.mp4']:
