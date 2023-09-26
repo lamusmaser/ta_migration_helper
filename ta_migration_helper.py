@@ -438,8 +438,11 @@ def main():
 
     diffs = compare_es_filesystem(video_files, all_files, source_dir)
     if args.PERFORM_MIGRATION:
-        print("This is a destructive action and could cause loss of data if interrupted. Giving ten seconds before initiating migration action...")
-        time.sleep(10)
+        if args.DRY_RUN:
+            print("This is a dry-run of the migration action and should not perform any filesystem activities. Please review all DRY_RUN outputs before running without this flag.")
+        else:
+            print("This is a destructive action and could cause loss of data if interrupted. Giving ten seconds before initiating migration action...")
+            time.sleep(10)
         print("Starting the migration process. PLEASE DO NOT INTERRUPT THIS PROCESS.")
         migrate_files(diffs, all_files, source_dir)
         print("Ending the migration process.")
