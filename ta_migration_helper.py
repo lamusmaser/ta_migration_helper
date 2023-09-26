@@ -206,38 +206,38 @@ def review_filesystem(dir):
                         if not video_files.get(video_id):
                             video_files[video_id] = []
                         vid_type = None
-                    if args.GUESS_TYPES:
-                        if "video" in mimetypes.guess_type(filename)[0]:
-                            vid_type = 'video'
-                        elif None in mimetypes.guess_type(filename)[0]:
-                            try:
-                                with open(filename, 'r') as f:
-                                    lines = f.readlines()
-                            except Exception as e:
-                                print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
-                                vid_type = 'other'
-                            if "WEBVTT" in lines[0]:
-                                vid_type = 'subtitle'
-                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
-                                for line in lines:
-                                    if "Language: " in line:
-                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{line.strip().split()[-1]}{os.path.splitext(filename)[-1]}")
+                        if args.GUESS_TYPES:
+                            if "video" in mimetypes.guess_type(filename)[0]:
+                                vid_type = 'video'
+                            elif None in mimetypes.guess_type(filename)[0]:
+                                try:
+                                    with open(filename, 'r') as f:
+                                        lines = f.readlines()
+                                except Exception as e:
+                                    print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
+                                    vid_type = 'other'
+                                if "WEBVTT" in lines[0]:
+                                    vid_type = 'subtitle'
+                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                    for line in lines:
+                                        if "Language: " in line:
+                                            expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{line.strip().split()[-1]}{os.path.splitext(filename)[-1]}")
+                                else:
+                                    vid_type = 'other'
                             else:
                                 vid_type = 'other'
                         else:
-                            vid_type = 'other'
-                    else:
-                        if os.path.splitext(filename)[-1] in ['.mp4']:
-                            vid_type = 'video'
-                        elif os.path.splitext(filename)[-1] in ['.vtt']:
-                            vid_type = 'subtitle'
-                            expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))}{os.path.splitext(filename)[-1]}")
-                        else:
-                            vid_type = 'other'
-                        det = {'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location}
-                        if vid_type == 'subtitle':
-                            det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
-                        video_files[video_id].append(det)
+                            if os.path.splitext(filename)[-1] in ['.mp4']:
+                                vid_type = 'video'
+                            elif os.path.splitext(filename)[-1] in ['.vtt']:
+                                vid_type = 'subtitle'
+                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))}{os.path.splitext(filename)[-1]}")
+                            else:
+                                vid_type = 'other'
+                            det = {'channel_id': channel_id, 'type': vid_type, 'original_location': original_location, 'expected_location': expected_location}
+                            if vid_type == 'subtitle':
+                                det['lang'] = os.path.splitext(os.path.splitext(filename)[0])[-1].translate(str.maketrans('', '', string.punctuation))
+                            video_files[video_id].append(det)
                     else:
                         print(f"Could not extract channel ID for `{filename}`.")
                 else:
