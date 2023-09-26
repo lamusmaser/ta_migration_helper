@@ -209,7 +209,7 @@ def review_filesystem(dir):
                         if args.GUESS_TYPES:
                             if "video" in mimetypes.guess_type(filename)[0]:
                                 vid_type = 'video'
-                            elif None in mimetypes.guess_type(filename)[0]:
+                            elif mimetypes.guess_type(filename)[0] == None:
                                 try:
                                     with open(filename, 'r') as f:
                                         lines = f.readlines()
@@ -370,7 +370,7 @@ def migrate_files(diffs, all_files, root):
                     if args.GUESS_TYPES:
                         if "video" in mimetypes.guess_type(file_fs)[0]:
                             vid_type = 'video'
-                        elif None in mimetypes.guess_type(file_fs)[0]:
+                        elif mimetypes.guess_type(file_fs)[0] == None:
                             with open(file_fs, 'r') as f:
                                 firstline = f.readline().strip('\n')
                             if "WEBVTT" in firstline:
