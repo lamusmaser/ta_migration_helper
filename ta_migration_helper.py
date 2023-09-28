@@ -214,11 +214,11 @@ def review_filesystem(dir):
                         lang = None
                         if args.GUESS_TYPES:
                             try:
-                                file_mimetype = mimetypes.guess_type(filename)[0]
+                                file_mimetype = mimetypes.guess_type(original_location)[0]
                                 lines = []
                                 if file_mimetype == None:
                                     try:
-                                        with open(filename, 'r') as f:
+                                        with open(original_location, 'r') as f:
                                             lines = f.readlines()
                                     except Exception as e:
                                         print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
