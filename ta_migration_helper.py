@@ -226,7 +226,7 @@ def review_filesystem(dir):
                                         expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
                                         for line in lines:
                                             if "Language: " in line:
-                                                lang = line.strip().split()[-1]
+                                                lang = line.strip().split()[-1].strip().lower()
                                                 expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
                                     else:
                                         vid_type = 'other'
