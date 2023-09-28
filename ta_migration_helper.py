@@ -236,6 +236,7 @@ def review_filesystem(dir):
                                 else:
                                     vid_type = 'other'
                             except TypeError as e:
+                                print(f"An error occurred while attempting to guess the filetype for {filename}: {e}")
                                 vid_type = 'other'
                         else:
                             if os.path.splitext(filename)[-1] in ['.mp4']:
