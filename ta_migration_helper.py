@@ -214,7 +214,8 @@ def review_filesystem(dir):
                         lang = None
                         if args.GUESS_TYPES:
                             try:
-                                if mimetypes.guess_type(filename)[0] == None:
+                                file_mimetype = mimetypes.guess_type(filename)[0]
+                                if file_mimetype == None:
                                     try:
                                         with open(filename, 'r') as f:
                                             lines = f.readlines()
@@ -230,7 +231,7 @@ def review_filesystem(dir):
                                                 expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
                                     else:
                                         vid_type = 'other'
-                                elif "video" in mimetypes.guess_type(filename)[0]:
+                                elif "video" in file_mimetype:
                                     vid_type = 'video'
                                 else:
                                     vid_type = 'other'
