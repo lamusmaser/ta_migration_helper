@@ -215,6 +215,7 @@ def review_filesystem(dir):
                         if args.GUESS_TYPES:
                             try:
                                 file_mimetype = mimetypes.guess_type(filename)[0]
+                                lines = []
                                 if file_mimetype == None:
                                     try:
                                         with open(filename, 'r') as f:
