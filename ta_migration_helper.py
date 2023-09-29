@@ -235,6 +235,25 @@ def review_filesystem(dir):
                                                 expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
                                     else:
                                         vid_type = 'other'
+                                elif "vtt" in file_mimetype:
+                                    vid_type = 'subtitle'
+                                    try:
+                                        with open(original_location, 'r') as f:
+                                            lines = f.readlines()
+                                    except Exception as e:
+                                        print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
+                                        vid_type = 'other'
+                                    dprint(f"File first line [Expect `WEBVTT`]: {lines[0]}")
+                                    dprint(f"File first line [Expect `Language`]: {lines[2]}")
+                                    if "WEBVTT" in lines[0]:
+                                        vid_type = 'subtitle'
+                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                        for line in lines:
+                                            if "Language: " in line:
+                                                lang = line.strip().split()[-1].strip().lower()
+                                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
+                                    else:
+                                        vid_type = 'other'
                                 elif "video" in file_mimetype:
                                     vid_type = 'video'
                                 else:
