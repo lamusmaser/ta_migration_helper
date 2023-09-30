@@ -224,8 +224,8 @@ def review_filesystem(dir):
                                     except Exception as e:
                                         print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
                                         vid_type = 'other'
-                                    dprint(f"File first line [Expect `WEBVTT`]: {lines[0]}")
-                                    dprint(f"File first line [Expect `Language`]: {lines[2]}")
+                                    dprint(f"File first line [Expect `WEBVTT`]: {lines[0].strip()}")
+                                    dprint(f"File first line [Expect `Language: XX`]: {lines[2].strip()}")
                                     if "WEBVTT" in lines[0]:
                                         vid_type = 'subtitle'
                                         expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
