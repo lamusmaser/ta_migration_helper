@@ -220,39 +220,61 @@ def review_filesystem(dir):
                                 if file_mimetype == None:
                                     try:
                                         with open(original_location, 'r') as f:
-                                            lines = f.readlines()
+                                            set_subtitle = False
+                                            set_language = False
+                                            counter = 0
+                                            while True:
+                                                line = f.readline()
+                                                counter += 1
+                                                if not line:
+                                                    vid_type = 'other'
+                                                    break
+                                                if counter == 1:
+                                                    dprint(f"File first line [Expect `WEBVTT`]: {line.strip()}")
+                                                if counter == 3:
+                                                    dprint(f"File third line [Expect `Language: XX`]: {line.strip()}")
+                                                if "WEBVTT" in line:
+                                                    set_subtitle = True
+                                                    vid_type = 'subtitle'
+                                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                                if "Language: " in line:
+                                                    set_language = True
+                                                    lang = line.strip().split()[-1].strip().lower()
+                                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
+                                                if set_subtitle and set_language:
+                                                    break
                                     except Exception as e:
                                         print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
-                                        vid_type = 'other'
-                                    dprint(f"File first line [Expect `WEBVTT`]: {lines[0].strip()}")
-                                    dprint(f"File first line [Expect `Language: XX`]: {lines[2].strip()}")
-                                    if "WEBVTT" in lines[0]:
-                                        vid_type = 'subtitle'
-                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
-                                        for line in lines:
-                                            if "Language: " in line:
-                                                lang = line.strip().split()[-1].strip().lower()
-                                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
-                                    else:
                                         vid_type = 'other'
                                 elif "vtt" in file_mimetype:
                                     vid_type = 'subtitle'
                                     try:
                                         with open(original_location, 'r') as f:
-                                            lines = f.readlines()
+                                            set_subtitle = False
+                                            set_language = False
+                                            counter = 0
+                                            while True:
+                                                line = f.readline()
+                                                counter += 1
+                                                if not line:
+                                                    vid_type = 'other'
+                                                    break
+                                                if counter == 1:
+                                                    dprint(f"File first line [Expect `WEBVTT`]: {line.strip()}")
+                                                if counter == 3:
+                                                    dprint(f"File third line [Expect `Language: XX`]: {line.strip()}")
+                                                if "WEBVTT" in line:
+                                                    set_subtitle = True
+                                                    vid_type = 'subtitle'
+                                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
+                                                if "Language: " in line:
+                                                    set_language = True
+                                                    lang = line.strip().split()[-1].strip().lower()
+                                                    expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
+                                                if set_subtitle and set_language:
+                                                    break
                                     except Exception as e:
                                         print(f"An error occurred while attempting to determine filetype for {filename}: {e}")
-                                        vid_type = 'other'
-                                    dprint(f"File first line [Expect `WEBVTT`]: {lines[0]}")
-                                    dprint(f"File first line [Expect `Language`]: {lines[2]}")
-                                    if "WEBVTT" in lines[0]:
-                                        vid_type = 'subtitle'
-                                        expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}{os.path.splitext(filename)[-1]}")
-                                        for line in lines:
-                                            if "Language: " in line:
-                                                lang = line.strip().split()[-1].strip().lower()
-                                                expected_location = os.path.join(os.path.join(dir, channel_id),f"{video_id}.{lang}{os.path.splitext(filename)[-1]}")
-                                    else:
                                         vid_type = 'other'
                                 elif "video" in file_mimetype:
                                     vid_type = 'video'
@@ -283,6 +305,7 @@ def review_filesystem(dir):
     dprint(f"All video files: {video_files}.")
     dprint(f"All files in filesystem: {all_files}")
     return video_files, all_files
+
 
 def compare_es_filesystem(video_files, all_files, source):
     es_video_ids = get_video_ids_from_es()
