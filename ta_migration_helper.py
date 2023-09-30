@@ -502,7 +502,7 @@ def update_es_for_item(id, nmu, vid_type, lang):
             if sub['lang'] == lang:
                 lang_in_subs = True
                 subtitles[i]['media_url'] = new_media_url
-        if not lang_in_subs:
+        if not lang_in_subs and example_sub:
             missing_sub = {}
             missing_sub['ext'] = example_sub['ext']
             missing_sub['url'] = example_sub['url'].replace("&fmt",f"&lang={lang}&fmt")
