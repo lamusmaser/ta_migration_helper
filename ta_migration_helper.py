@@ -23,6 +23,115 @@ class FakeLogger(object):
     def error(self, msg):
         pass
 
+iso639_1_to_full_name = {
+    'af': 'Afrikaans',
+    'sq': 'Albanian',
+    'am': 'Amharic',
+    'ar': 'Arabic',
+    'hy': 'Armenian',
+    'az': 'Azerbaijani',
+    'eu': 'Basque',
+    'be': 'Belarusian',
+    'bn': 'Bengali',
+    'bs': 'Bosnian',
+    'bg': 'Bulgarian',
+    'ca': 'Catalan',
+    'ceb': 'Cebuano',
+    'ny': 'Chichewa',
+    'zh': 'Chinese (Simplified)',
+    'zh-TW': 'Chinese (Traditional)',
+    'co': 'Corsican',
+    'hr': 'Croatian',
+    'cs': 'Czech',
+    'da': 'Danish',
+    'nl': 'Dutch',
+    'en': 'English',
+    'eo': 'Esperanto',
+    'et': 'Estonian',
+    'tl': 'Filipino',
+    'fi': 'Finnish',
+    'fr': 'French',
+    'fy': 'Frisian',
+    'gl': 'Galician',
+    'ka': 'Georgian',
+    'de': 'German',
+    'el': 'Greek',
+    'gu': 'Gujarati',
+    'ht': 'Haitian Creole',
+    'ha': 'Hausa',
+    'haw': 'Hawaiian',
+    'he': 'Hebrew',
+    'hi': 'Hindi',
+    'hmn': 'Hmong',
+    'hu': 'Hungarian',
+    'is': 'Icelandic',
+    'ig': 'Igbo',
+    'id': 'Indonesian',
+    'ga': 'Irish',
+    'it': 'Italian',
+    'ja': 'Japanese',
+    'jw': 'Javanese',
+    'kn': 'Kannada',
+    'kk': 'Kazakh',
+    'km': 'Khmer',
+    'rw': 'Kinyarwanda',
+    'ko': 'Korean',
+    'ku': 'Kurdish (Kurmanji)',
+    'ky': 'Kyrgyz',
+    'lo': 'Lao',
+    'la': 'Latin',
+    'lv': 'Latvian',
+    'lt': 'Lithuanian',
+    'lb': 'Luxembourgish',
+    'mk': 'Macedonian',
+    'mg': 'Malagasy',
+    'ms': 'Malay',
+    'ml': 'Malayalam',
+    'mt': 'Maltese',
+    'mi': 'Maori',
+    'mr': 'Marathi',
+    'mn': 'Mongolian',
+    'my': 'Myanmar (Burmese)',
+    'ne': 'Nepali',
+    'no': 'Norwegian',
+    'ps': 'Pashto',
+    'fa': 'Persian',
+    'pl': 'Polish',
+    'pt': 'Portuguese',
+    'pa': 'Punjabi',
+    'ro': 'Romanian',
+    'ru': 'Russian',
+    'sm': 'Samoan',
+    'gd': 'Scots Gaelic',
+    'sr': 'Serbian',
+    'st': 'Sesotho',
+    'sn': 'Shona',
+    'sd': 'Sindhi',
+    'si': 'Sinhala',
+    'sk': 'Slovak',
+    'sl': 'Slovenian',
+    'so': 'Somali',
+    'es': 'Spanish',
+    'su': 'Sundanese',
+    'sw': 'Swahili',
+    'sv': 'Swedish',
+    'tg': 'Tajik',
+    'ta': 'Tamil',
+    'te': 'Telugu',
+    'th': 'Thai',
+    'tr': 'Turkish',
+    'uk': 'Ukrainian',
+    'ur': 'Urdu',
+    'ug': 'Uyghur',
+    'uz': 'Uzbek',
+    'vi': 'Vietnamese',
+    'cy': 'Welsh',
+    'xh': 'Xhosa',
+    'yi': 'Yiddish',
+    'yo': 'Yoruba',
+    'zu': 'Zulu'
+}
+
 def parse_args():
     default_source = "/youtube"
     default_use_ytdlp = True
@@ -306,7 +415,6 @@ def review_filesystem(dir):
     dprint(f"All files in filesystem: {all_files}")
     return video_files, all_files
 
-
 def compare_es_filesystem(video_files, all_files, source):
     es_video_ids = get_video_ids_from_es()
     fs_video_ids_set = set(video_files.keys())
@@ -382,13 +490,32 @@ def prep_directory(root, source, channel_id):
 def update_es_for_item(id, nmu, vid_type, lang):
     new_media_url = nmu
     if vid_type == 'subtitle':
+        lang_in_subs = False
+        example_sub = {}
         res = ElasticWrap("ta_video/_search").get(data={"query": {"match":{"_id": id}}})
         if res[1] == 200:
             res = res[0]
         subtitles = res['hits']['hits'][0]['_source']['subtitles']
         for i, sub in enumerate(subtitles):
+            if i == 0:
+                example_sub = sub
             if sub['lang'] == lang:
+                lang_in_subs = True
                 subtitles[i]['media_url'] = new_media_url
+        if not lang_in_subs:
+            missing_sub = {}
+            missing_sub['ext'] = example_sub['ext']
+            missing_sub['url'] = example_sub['url'].replace("&fmt",f"&lang={lang}&fmt")
+            language_name = iso639_1_to_full_name.get(lang)
+            if language_name:
+                missing_sub['name'] = language_name
+            else:
+                dprint(f"Language name could not be found in language dictionary: {lang}")
+                missing_sub['name'] = "N/A"
+            missing_sub['lang'] = lang
+            missing_sub['source'] = "auto"
+            missing_sub['media_url'] = new_media_url
+            subtitles.append(missing_sub)
         source = {"doc": {"subtitles": subtitles}}
     else:
         source = {"doc": {"media_url": new_media_url}}
