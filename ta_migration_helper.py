@@ -491,17 +491,23 @@ def update_es_for_item(id, nmu, vid_type, lang):
     new_media_url = nmu
     if vid_type == 'subtitle':
         lang_in_subs = False
+        subtitles = None
         example_sub = {}
         res = ElasticWrap("ta_video/_search").get(data={"query": {"match":{"_id": id}}})
         if res[1] == 200:
             res = res[0]
-        subtitles = res['hits']['hits'][0]['_source']['subtitles']
-        for i, sub in enumerate(subtitles):
-            if i == 0:
-                example_sub = sub
-            if sub['lang'] == lang:
-                lang_in_subs = True
-                subtitles[i]['media_url'] = new_media_url
+        try:
+            subtitles = res['hits']['hits'][0]['_source']['subtitles']
+        except Exception as e:
+            print(f"No existing subtitles found for ID {id} in ElasticSearch. Continuing without adding new subtitles to ID.")
+            return 1
+        if subtitles:
+            for i, sub in enumerate(subtitles):
+                if i == 0:
+                    example_sub = sub
+                if sub['lang'] == lang:
+                    lang_in_subs = True
+                    subtitles[i]['media_url'] = new_media_url
         if not lang_in_subs and example_sub:
             missing_sub = {}
             missing_sub['ext'] = example_sub['ext']
@@ -516,7 +522,8 @@ def update_es_for_item(id, nmu, vid_type, lang):
             missing_sub['source'] = "auto"
             missing_sub['media_url'] = new_media_url
             subtitles.append(missing_sub)
-        source = {"doc": {"subtitles": subtitles}}
+        if subtitles:
+            source = {"doc": {"subtitles": subtitles}}
     else:
         source = {"doc": {"media_url": new_media_url}}
     if args.DRY_RUN:
