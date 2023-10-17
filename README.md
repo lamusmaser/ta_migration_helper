@@ -44,7 +44,7 @@ This is expected to run from within the TubeArchivist container, at the `/app` d
 
 You can run this script with the optional flags. For example:
 ```
-python ta_migration_helper.py -s /path/to/custom/directory -Y -S 5 -M
+python ta_migration_helper.py -d /path/to/custom/directory -Y -s 5 -M
 ```
 
 This would set the source directory to `/path/to/custom/directory`, disable YouTube calls via `yt-dlp`, set the sleep time to 5 seconds between YouTube calls, and enable migration.
